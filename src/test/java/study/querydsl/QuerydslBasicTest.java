@@ -11,6 +11,8 @@ import study.querydsl.domain.Member;
 import study.querydsl.domain.QMember;
 import study.querydsl.domain.Team;
 
+import static study.querydsl.domain.QMember.*;
+
 @SpringBootTest
 @Transactional
 public class QuerydslBasicTest {
@@ -60,6 +62,28 @@ public class QuerydslBasicTest {
                 .select(m)
                 .from(m)
                 .where(m.username.eq("member1"))
+                .fetchOne();
+
+        Assertions.assertThat(findMember.getUsername()).isEqualTo("member1");
+    }
+
+    @Test
+    public void search() {
+        Member findMember = query.selectFrom(member)
+                .where(member.username.eq("member1")
+                        .and(member.age.eq(10)))
+                .fetchOne();
+
+        Assertions.assertThat(findMember.getUsername()).isEqualTo("member1");
+    }
+
+    @Test
+    public void searchAndParam() {
+        Member findMember = query.selectFrom(member)
+                .where(
+                        member.username.eq("member1"),
+                        (member.age.between(10, 30))
+                )
                 .fetchOne();
 
         Assertions.assertThat(findMember.getUsername()).isEqualTo("member1");

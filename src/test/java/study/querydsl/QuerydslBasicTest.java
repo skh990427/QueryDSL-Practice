@@ -280,4 +280,32 @@ public class QuerydslBasicTest {
         //tuple = [Member(id=3, username=member3, age=30), null]
         //tuple = [Member(id=4, username=member4, age=40), null]
     }
+
+    /**
+     * 연관관계가 없는 엔티티 외부 조인
+     * 회원의 이름과 팀 이름이 같은 대상 외부 조인
+     */
+    @Test
+    public void join_on_no_relation() {
+        em.persist(new Member("teamA"));
+        em.persist(new Member("teamB"));
+        em.persist(new Member("teamC"));
+
+        List<Tuple> result = query
+                .select(member, team)
+                .from(member)
+                .leftJoin(team).on(member.username.eq(team.name))
+                .fetch();
+
+        for (Tuple tuple : result) {
+            System.out.println("tuple = " + tuple);
+        }
+        //tuple = [Member(id=1, username=member1, age=10), null]
+        //tuple = [Member(id=2, username=member2, age=20), null]
+        //tuple = [Member(id=3, username=member3, age=30), null]
+        //tuple = [Member(id=4, username=member4, age=40), null]
+        //tuple = [Member(id=5, username=teamA, age=0), Team(id=1, name=teamA)]
+        //tuple = [Member(id=6, username=teamB, age=0), Team(id=2, name=teamB)]
+        //tuple = [Member(id=7, username=teamC, age=0), null]
+    }
 }

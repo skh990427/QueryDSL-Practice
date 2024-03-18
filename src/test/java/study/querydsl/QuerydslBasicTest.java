@@ -1,7 +1,10 @@
 package study.querydsl;
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.Tuple;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.PersistenceUnit;
 import org.junit.jupiter.api.Test;
 import jakarta.persistence.EntityManager;
 import org.assertj.core.api.Assertions;
@@ -307,5 +310,37 @@ public class QuerydslBasicTest {
         //tuple = [Member(id=5, username=teamA, age=0), Team(id=1, name=teamA)]
         //tuple = [Member(id=6, username=teamB, age=0), Team(id=2, name=teamB)]
         //tuple = [Member(id=7, username=teamC, age=0), null]
+    }
+
+    @PersistenceUnit
+    EntityManagerFactory emf;
+
+    @Test
+    public void fetchJoinNo() {
+        em.flush();
+        em.clear();
+
+        Member findMember = query
+                .selectFrom(member)
+                .where(member.username.eq("member1"))
+                .fetchOne();
+
+        boolean loaded = emf.getPersistenceUnitUtil().isLoaded(findMember.getTeam());
+        Assertions.assertThat(loaded).as("패치조인 미적용").isFalse();
+    }
+
+    @Test
+    public void fetchJoinUse() {
+        em.flush();
+        em.clear();
+
+        Member findMember = query
+                .selectFrom(member)
+                .join(member.team).fetchJoin()
+                .where(member.username.eq("member1"))
+                .fetchOne();
+
+        boolean loaded = emf.getPersistenceUnitUtil().isLoaded(findMember.getTeam());
+        Assertions.assertThat(loaded).as("패치조인 적용").isTrue();
     }
 }

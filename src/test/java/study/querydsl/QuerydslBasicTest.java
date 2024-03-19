@@ -1,6 +1,7 @@
 package study.querydsl;
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.Expressions;
@@ -21,6 +22,7 @@ import study.querydsl.domain.QMember;
 import study.querydsl.domain.QTeam;
 import study.querydsl.domain.Team;
 import study.querydsl.dto.MemberDto;
+import study.querydsl.dto.UserDto;
 
 import java.util.List;
 
@@ -570,6 +572,29 @@ public class QuerydslBasicTest {
 
         for (MemberDto memberDto : result) {
             System.out.println("memberDto = " + memberDto);
+        }
+    }
+
+    /**
+     * 필드방식 Dto랑 이름이 딱딱 맞아야하는데 .as 사용하면된다.
+     * 서브쿼리일때는 ExpressionsUtils.as 사용해서 앨리어스 주면 된다.
+     */
+    @Test
+    public void findUserDto() {
+        QMember memberSub = new QMember("memberSub");
+
+        List<UserDto> result = query
+                .select(Projections.fields(UserDto.class,
+                        member.username.as("name"),
+
+                        ExpressionUtils.as(JPAExpressions
+                                .select(memberSub.age.max()).from(memberSub), "age")
+                ))
+                .from(member)
+                .fetch();
+
+        for (UserDto userDto : result) {
+            System.out.println("userDto = " + userDto);
         }
     }
 }

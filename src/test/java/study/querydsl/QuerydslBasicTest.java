@@ -22,6 +22,7 @@ import study.querydsl.domain.QMember;
 import study.querydsl.domain.QTeam;
 import study.querydsl.domain.Team;
 import study.querydsl.dto.MemberDto;
+import study.querydsl.dto.QMemberDto;
 import study.querydsl.dto.UserDto;
 
 import java.util.List;
@@ -595,6 +596,23 @@ public class QuerydslBasicTest {
 
         for (UserDto userDto : result) {
             System.out.println("userDto = " + userDto);
+        }
+    }
+
+    /**
+     * constructor 랑 무슨차이냐 하면 파라미터가 더 들어가게되면 컴파일 시점에 오류가 난다.
+     * DTO가 쿼리DSL에 의존적으로 변한다.
+     * DTO를 순수하게 유지하고 싶다면 위에방식을 사용하고, 좀 유연하게 개발하고싶다면 이 방법을 채택하자
+     */
+    @Test
+    public void findDtoByQueryProjection() {
+        List<MemberDto> result = query
+                .select(new QMemberDto(member.username, member.age))
+                .from(member)
+                .fetch();
+
+        for (MemberDto memberDto : result) {
+            System.out.println("memberDto = " + memberDto);
         }
     }
 }

@@ -18,6 +18,7 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 import study.querydsl.domain.Member;
 import study.querydsl.domain.QMember;
@@ -674,5 +675,42 @@ public class QuerydslBasicTest {
         } else {
             return null;
         }
+    }
+
+    @Test
+    public void bulkUpdate() {
+
+        //member1 = 10 -> 비회원
+        //member2 = 20 -> 비회원
+        //member3 = 30 -> 유지
+        //member4 = 40 -> 유지
+        long count = query
+                .update(member)
+                .set(member.username, "비회원")
+                .where(member.age.lt(28))
+                .execute();
+
+        //벌크 연산은 영속성컨텍스트를 무시하고 DB에 직접 쿼리함
+        System.out.println("================");
+        em.flush();
+        System.out.println("================");
+        em.clear();
+    }
+
+    @Test
+    public void bulkAdd() {
+        long count = query
+                .update(member)
+//                .set(member.age, member.age.add(1)) //더하기
+                .set(member.age, member.age.multiply(2)) //곱하기
+                .execute();
+    }
+
+    @Test
+    public void bulkDelete() {
+        long execute = query
+                .delete(member)
+                .where(member.age.gt(18))
+                .execute();
     }
 }
